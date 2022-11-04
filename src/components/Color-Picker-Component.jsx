@@ -48,7 +48,7 @@ const ColorPickerComponent = ({title, changeColor, selectedPickerColor}) =>{
         </div>
         { showColorPicker ? <div style={ styles.popover }>
           <div style={ styles.cover } onClick={showOrHideColorPicker }/>
-          <SketchPicker color={ selectedPickerColor } onChange={changeColor } />
+          <SketchPicker color={ selectedPickerColor.color } onChange={changeColor } />
         </div> : null }
 
       </div>
