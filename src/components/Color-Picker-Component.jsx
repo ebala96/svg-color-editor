@@ -2,22 +2,21 @@ import { useState } from "react";
 import { SketchPicker } from "react-color";
 import reactCSS from "reactcss";
 
-const ColorPickerComponent = ({title, changeColor, selectedPickerColor}) =>{
+const ColorPickerComponent = ({ title, changeColor, selectedPickerColor }) => {
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
-    const [showColorPicker, setShowColorPicker] = useState(false);
-    
-    const showOrHideColorPicker = () => { 
-         console.log(showColorPicker);
-         setShowColorPicker(!showColorPicker);
-    }
-    
-    const styles = reactCSS({
+  const showOrHideColorPicker = () => {
+    console.log(showColorPicker);
+    setShowColorPicker(!showColorPicker);
+  };
+
+  const styles = reactCSS({
     default: {
       color: {
         width: "36px",
         height: "14px",
         borderRadius: "2px",
-        background: `rgba(${selectedPickerColor.color.r}, ${selectedPickerColor.color.g}, ${selectedPickerColor.color.b}, ${selectedPickerColor.color.a})`,
+        //background: `rgba(${selectedPickerColor.color.r}, ${selectedPickerColor.color.g}, ${selectedPickerColor.color.b}, ${selectedPickerColor.color.a})`,
       },
       swatch: {
         padding: "5px",
@@ -40,19 +39,21 @@ const ColorPickerComponent = ({title, changeColor, selectedPickerColor}) =>{
       },
     },
   });
-    
-    return(
-        <div><h6>Color Picker for {title}</h6>
+
+  return (
+    <div>
+      {/* <h6>Color Picker for {title}</h6>
         <div style={ styles.swatch } onClick={ showOrHideColorPicker }>
           <div style={ styles.color } />
-        </div>
-        { showColorPicker ? <div style={ styles.popover }>
-          <div style={ styles.cover } onClick={showOrHideColorPicker }/>
-          <SketchPicker color={ selectedPickerColor.color } onChange={changeColor } />
-        </div> : null }
-
+        </div> */}
+      {/* {showColorPicker ? ( */}
+      <div style={styles.popover}>
+        <div style={styles.cover} onClick={showOrHideColorPicker} />
+        <SketchPicker color={selectedPickerColor} onChange={changeColor} />
       </div>
-    );
-}
+      {/* ) : null} */}
+    </div>
+  );
+};
 
-export default ColorPickerComponent
+export default ColorPickerComponent;

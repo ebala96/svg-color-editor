@@ -72,11 +72,16 @@ const App = () => {
     setSelectedFile(event.target.files[0]);
   };
 
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  useEffect(() => {
+    console.log(showColorPicker);
+  }, [showColorPicker]);
+
   return (
     <div className="App">
       <h2>Upload SVG File</h2>
       <input type="file" name="file" onChange={changeHandler} />
-      <div ref={svgRef}>
+      {/* <div ref={svgRef}>
         <SvgColorChanger fill={colorForSVG.fill} stroke={colorForSVG.stroke} />
       </div>
       <div>
@@ -91,44 +96,57 @@ const App = () => {
           changeColor={changeColorForFill}
           selectedPickerColor={selectedPickerColorFill}
         />
-      </div>
+      </div> */}
       <div>
         <button onClick={downloadSVG}>Download</button>
       </div>
-      {svgcontents && (
-        <SvgLoader
-          svgXML={svgcontents}
-          style={{ width: "500px", height: "200px", border: "solid 1px" }}
-          onSVGReady={() => {
-            var ele = document.getElementById("Capa_1");
-            console.log(ele);
-          }}
-        >
-          <SvgProxy
-            selector="path"
-            onElementSelected={(elem) => {
-              if (elem.length > 1) {
-                elem.map((paths, index) => {
-                  paths.addEventListener(
+      <div ref={svgRef}>
+        {svgcontents && (
+          <SvgLoader
+            svgXML={svgcontents}
+            style={{ width: "200px", height: "200px", border: "solid 1px" }}
+            onSVGReady={() => {}}
+          >
+            <SvgProxy
+              selector="path"
+              onElementSelected={(elem) => {
+                if (elem.length > 1) {
+                  elem.map((paths, index) => {
+                    paths.addEventListener(
+                      "click",
+                      (e) => {
+                        //e.preventDefault();
+                        console.log(paths.getAttribute("fill"));
+                        setShowColorPicker(!showColorPicker);
+                        console.log(showColorPicker);
+                        {
+                          showColorPicker && (
+                            <ColorPickerComponent
+                              title="Fill"
+                              changeColor={(color) => {
+                                paths.style.fill = color.hex;
+                              }}
+                              selectedPickerColor={paths.getAttribute("fill")}
+                            />
+                          );
+                        }
+                      },
+                      false
+                    );
+                  });
+                } else
+                  elem.addEventListener(
                     "click",
                     () => {
-                      console.log(paths.getAttribute("fill"));
+                      console.log(elem.getAttribute("fill"));
                     },
                     false
                   );
-                });
-              } else
-                elem.addEventListener(
-                  "click",
-                  () => {
-                    console.log("1");
-                  },
-                  false
-                );
-            }}
-          />
-        </SvgLoader>
-      )}
+              }}
+            />
+          </SvgLoader>
+        )}
+      </div>
     </div>
   );
 };
