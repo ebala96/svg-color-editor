@@ -1,9 +1,7 @@
 import { useRef, useState, useCallback } from "react";
-import "./styles.css";
-import reactCSS from "reactcss";
-import SvgColorChanger from "./components/Svg-Color-Changer";
+import "./App.css";
 import ColorPickerComponent from "./components/Color-Picker-Component";
-import { SketchPicker } from "react-color";
+import { SvgLoader, SvgProxy } from "react-svgmt";
 
 function downloadBlob(blob, filename) {
   const objectUrl = URL.createObjectURL(blob);
@@ -19,73 +17,114 @@ function downloadBlob(blob, filename) {
 }
 
 const App = () => {
-  const [selectedPickerColorFill, setSelectedPickerColorFill] = useState({
-    color: { r: "241", g: "112", b: "19", a: "1" },
-  });
-  const [selectedPickerColorStroke, setSelectedPickerColorStroke] = useState({
-    color: { r: "241", g: "112", b: "19", a: "1" },
-  });
-  const [selectedFile, setSelectedFile] = useState();
-  const [colorForSVG, setColorForSVG] = useState({
-    fill: `rgba(${selectedPickerColorFill.color.r}, ${selectedPickerColorFill.color.g}, ${selectedPickerColorFill.color.b}, ${selectedPickerColorFill.color.a})`,
-    stroke: `rgba(${selectedPickerColorStroke.color.r}, ${selectedPickerColorStroke.color.g}, ${selectedPickerColorStroke.color.b}, ${selectedPickerColorStroke.color.a})`,
-  });
-
   const svgRef = useRef();
+  const [fileName, setFileName] = useState("");
+  const [svgString, setSvgString] = useState(null);
+  const [svgPaths, setSvgPaths] = useState([]);
+  const [selectedColor, setSelectedColor] = useState("#000");
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [colorsMap, setColorsMap] = useState([]);
 
   const downloadSVG = useCallback(() => {
     const svg = svgRef.current.innerHTML;
     const blob = new Blob([svg], { type: "image/svg+xml" });
-    downloadBlob(blob, `myimage.svg`);
-  }, []);
+    downloadBlob(blob, `${fileName}-edited.svg`);
+  }, [fileName]);
 
-  const changeColorForStroke = (color) => {
-    console.log("called on change colo");
-    console.log(colorForSVG);
-    setSelectedPickerColorStroke({ color: color.rgb });
-    setColorForSVG({
-      ...colorForSVG,
-      stroke: `rgba(${selectedPickerColorStroke.color.r}, ${selectedPickerColorStroke.color.g}, ${selectedPickerColorStroke.color.b}, ${selectedPickerColorStroke.color.a})`,
+  const updateColor = (oldcolor, newColor) => {
+    svgPaths.forEach((path) => {
+      if (path.getAttribute("fill") === oldcolor) {
+        path.setAttribute("fill", newColor);
+      }
     });
   };
 
-  const changeColorForFill = (color) => {
-    console.log("called on change colo");
-    console.log(colorForSVG);
-    setSelectedPickerColorFill({ color: color.rgb });
-    setColorForSVG({
-      ...colorForSVG,
-      fill: `rgba(${selectedPickerColorFill.color.r}, ${selectedPickerColorFill.color.g}, ${selectedPickerColorFill.color.b}, ${selectedPickerColorFill.color.a})`,
+  const uploadHandler = (event) => {
+    const svgFile = event.target.files[0];
+    setSvgString("");
+    setFileName(svgFile.name.split(".")[0]);
+    svgFile.text().then((value) => {
+      setSvgString(value);
     });
   };
 
-  const changeHandler = (event) => {
-    setSelectedFile(event.target.files[0]);
-    console.log(event.target.files[0]);
+  const showOrHideColorPicker = (color) => {
+    setSelectedColor(color);
+    const openColorPalette =
+      showColorPicker && color === selectedColor ? false : true;
+    setShowColorPicker(openColorPalette);
   };
 
+  const updateSvgPaths = (svgPaths) => {
+    var colorsLocalMap = svgPaths.reduce((map, path) => {
+      const color = path.getAttribute("fill");
+      if (map[color] === undefined) {
+        map[color] = true;
+      }
+      return map;
+    }, {});
+    setSvgPaths(svgPaths);
+    setColorsMap([...Object.keys(colorsLocalMap)]);
+  };
+
+  const updatedColorsMap = () => {
+    var colorsLocalMap = svgPaths.reduce((map, path) => {
+      const color = path.getAttribute("fill");
+      if (map[color] === undefined) {
+        map[color] = true;
+      }
+      return map;
+    }, {});
+    setColorsMap([...Object.keys(colorsLocalMap)]);
+  };
   return (
     <div className="App">
-      <h2>Upload SVG File</h2>
-      <input type="file" name="file" onChange={changeHandler} />
-      <div ref={svgRef}>
-        <SvgColorChanger fill={colorForSVG.fill} stroke={colorForSVG.stroke} />
-      </div>
-      <div>
-        <ColorPickerComponent
-          title="Stroke"
-          changeColor={changeColorForStroke}
-          selectedPickerColor={selectedPickerColorStroke}
-        />
-
-        <ColorPickerComponent
-          title="Fill"
-          changeColor={changeColorForFill}
-          selectedPickerColor={selectedPickerColorFill}
-        />
-      </div>
-      <div>
-        <button onClick={downloadSVG}>Download</button>
+      <div className="svg-outer-container">
+        <h2>Upload SVG File</h2>
+        <input type="file" name="file" onChange={uploadHandler} />
+        <div ref={svgRef} className="svg-container">
+          {svgString && (
+            <SvgLoader
+              svgXML={svgString}
+              style={{ width: "200px", height: "200px" }}
+            >
+              <SvgProxy selector="path" onElementSelected={updateSvgPaths} />
+            </SvgLoader>
+          )}
+        </div>
+        {svgString && (
+          <div>
+            <button onClick={downloadSVG}>Download</button>
+          </div>
+        )}
+        <div className="color-outer-container">
+          {colorsMap.length > 0 &&
+            colorsMap.map((color) => {
+              return (
+                <div
+                  className="color-container"
+                  key={color}
+                  onClick={() => showOrHideColorPicker(color)}
+                  style={{
+                    backgroundColor: color,
+                  }}
+                ></div>
+              );
+            })}
+        </div>
+        <div className="color-picker-container">
+          {showColorPicker && (
+            <ColorPickerComponent
+              title="Fill"
+              changeColor={(color) => {
+                updateColor(selectedColor, color.hex);
+                setSelectedColor(color.hex);
+                updatedColorsMap();
+              }}
+              selectedPickerColor={selectedColor}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

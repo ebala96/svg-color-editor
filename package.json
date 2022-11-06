@@ -9,7 +9,9 @@
     "react-color": "^2.19.3",
     "react-color-palette": "^6.2.0",
     "react-dom": "18.2.0",
-    "react-scripts": "4.0.0"
+    "react-scripts": "4.0.0",
+    "react-svgmt": "^1.2.0",
+    "get-svg-colors": "^2.0.0"
   },
   "devDependencies": {
     "@babel/runtime": "7.13.8",
