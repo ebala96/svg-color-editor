@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback } from "react";
 import "./App.css";
 import ColorPickerComponent from "./components/Color-Picker-Component";
 import { SvgLoader, SvgProxy } from "react-svgmt";
@@ -18,6 +18,7 @@ function downloadBlob(blob, filename) {
 
 const App = () => {
   const svgRef = useRef();
+  const [fileName, setFileName] = useState("");
   const [svgString, setSvgString] = useState(null);
   const [svgPaths, setSvgPaths] = useState([]);
   const [selectedColor, setSelectedColor] = useState("#000");
@@ -27,8 +28,8 @@ const App = () => {
   const downloadSVG = useCallback(() => {
     const svg = svgRef.current.innerHTML;
     const blob = new Blob([svg], { type: "image/svg+xml" });
-    downloadBlob(blob, `editedSVG.svg`);
-  }, []);
+    downloadBlob(blob, `${fileName}-edited.svg`);
+  }, [fileName]);
 
   const updateColor = (oldcolor, newColor) => {
     svgPaths.forEach((path) => {
@@ -41,6 +42,7 @@ const App = () => {
   const uploadHandler = (event) => {
     const svgFile = event.target.files[0];
     setSvgString("");
+    setFileName(svgFile.name.split(".")[0]);
     svgFile.text().then((value) => {
       setSvgString(value);
     });
@@ -84,7 +86,7 @@ const App = () => {
           {svgString && (
             <SvgLoader
               svgXML={svgString}
-              style={{ width: "200px", height: "200px", border: "solid 1px" }}
+              style={{ width: "200px", height: "200px" }}
             >
               <SvgProxy selector="path" onElementSelected={updateSvgPaths} />
             </SvgLoader>
